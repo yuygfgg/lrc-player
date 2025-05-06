@@ -1,0 +1,6 @@
+.DS_Store
+checks.json
+build/*
+build/
+node_modules/
+node_modules/*
