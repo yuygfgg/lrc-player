@@ -4,7 +4,7 @@ A cross-platform desktop application for playing local audio files with support 
 
 ## Features
 
-- ** Lyrics Support**: Display original lyrics and translations simultaneously
+- **Lyrics Support**: Display original lyrics and translations simultaneously
 - **Cross-Platform**: Works on Windows, macOS, and Linux
 - **Media Controls**: System-integrated media controls (play/pause, next/prev track, seek)
 - **Album Art Support**: Displays embedded artwork and external cover files
