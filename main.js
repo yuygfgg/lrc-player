@@ -103,48 +103,49 @@ async function openDirectory() {
 }
 
 async function loadDirectoryContents(directoryPath) {
+    const normalizedDirectoryPath = path.normalize(directoryPath);
     try {
-        const files = await readdir(directoryPath);
+        const files = await readdir(normalizedDirectoryPath);
         const fileData = await Promise.all(
             files.map(async (file) => {
-                const filePath = path.join(directoryPath, file);
-                const stats = await stat(filePath);
+                const filePath = path.join(normalizedDirectoryPath, file);
+                try {
+                    const stats = await stat(filePath);
 
-                if (stats.isDirectory()) {
-                    return {
-                        name: file,
-                        type: 'folder',
-                        path: filePath
-                    };
-                } else {
-                    const ext = path.extname(file).toLowerCase();
-                    if (['.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac'].includes(ext)) {
+                    if (stats.isDirectory()) {
                         return {
                             name: file,
-                            type: 'file',
+                            type: 'folder',
                             path: filePath
                         };
+                    } else {
+                        const ext = path.extname(file).toLowerCase();
+                        if (['.mp3', '.wav', '.ogg', '.flac', '.m4a', '.aac'].includes(ext)) {
+                            return {
+                                name: file,
+                                type: 'file',
+                                path: filePath
+                            };
+                        }
+                        return null;
                     }
-                    return null;
+                } catch (statError) {
+                    console.error(`Error stating file ${filePath}:`, statError);
+                    return null; // If stat fails, treat as non-existent or skip
                 }
             })
         );
 
         const filteredData = fileData
             .filter(item => item !== null)
-            .sort((a, b) => {
-                if (a.type !== b.type) {
-                    return a.type === 'folder' ? -1 : 1;
-                }
-                return a.name.localeCompare(b.name);
-            });
+            .sort((a, b) => a.name.localeCompare(b.name));
 
         mainWindow.webContents.send('directory-contents', {
-            path: directoryPath,
+            path: normalizedDirectoryPath,
             files: filteredData
         });
     } catch (error) {
-        console.error('Error loading directory:', error);
+        console.error(`Error loading directory ${normalizedDirectoryPath}:`, error);
         mainWindow.webContents.send('error', {
             message: `Failed to load directory: ${error.message}`
         });
